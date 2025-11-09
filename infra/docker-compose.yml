@@ -1,0 +1,103 @@
+version: "3.9"
+
+services:
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # RabbitMQ
+      - "15672:15672" # RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    networks:
+      - microservices
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: userdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices
+
+  # Gateway
+  gateway:
+    build: ../gateway
+    container_name: gateway
+    env_file: ./env/gateway.env
+    depends_on:
+      - rabbitmq
+    ports:
+      - "3000:3000"
+    networks:
+      - microservices
+
+  # User Service
+  user-service:
+    build: ../user-service
+    container_name: user-service
+    env_file: ./env/user-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+
+  # Email Service
+  email-service:
+    build: ../email-service
+    container_name: email-service
+    env_file: ./env/email-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+
+  # Push Service
+  push-service:
+    build: ../push-service
+    container_name: push-service
+    env_file: ./env/push-service.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - microservices
+
+  # Template Service
+  template-service:
+    build: ../template-service
+    container_name: template-service
+    env_file: ./env/template-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+
+  # Queue Service
+  queue-service:
+    build: ../queue-service
+    container_name: queue-service
+    env_file: ./env/queue-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge
+
+volumes:
+  postgres_data:

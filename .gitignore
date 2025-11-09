@@ -1,0 +1,22 @@
+# Node modules
+**/node_modules
+
+# Build output
+**/dist
+
+# Environment variables
+**/*.env
+
+# Logs
+**/*.log
+
+# Prisma client
+**/prisma/client
+
+# Docker
+docker-compose.override.yml
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
