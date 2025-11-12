@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { ClientsModule } from "@nestjs/microservices";
 import { TerminusModule } from "@nestjs/terminus";
 import { HttpModule } from "@nestjs/axios";
@@ -10,6 +11,7 @@ import { HealthController } from "./health.controller";
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({ ttl: 60, limit: 20 }),
     ClientsModule.register([
       {
         name: "EMAIL_SERVICE",

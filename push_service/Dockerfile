@@ -1,15 +1,22 @@
-FROM node:18-alpine AS development
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install --only=development
+FROM node:20-alpine AS builder
+WORKDIR /app/push-service
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY package.json pnpm-lock.yaml ./
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+# Build the project
+RUN pnpm run build
 
-FROM node:18-alpine AS production
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install --only=production
-COPY --from=development /usr/src/app/dist ./dist
+FROM node:20-alpine AS production
+WORKDIR /app/push-service
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY package.json pnpm-lock.yaml ./
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
+# Copy build output from builder
+COPY --from=builder /app/push-service/dist ./dist
+# Start the service
 CMD ["node", "dist/main"]

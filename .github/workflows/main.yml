@@ -12,25 +12,38 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
+      #  Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-          cache: "pnpm"
-          cache-dependency-path: "**/pnpm-lock.yaml"
 
+      #  Install pnpm
       - name: Install pnpm
         run: npm install -g pnpm
 
+      #  Cache pnpm dependencies
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      #  Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      #  Build services
       - name: Build services
         run: pnpm recursive run build
 
+      # Run tests
       - name: Run tests
         run: pnpm recursive run test
 
@@ -38,27 +51,30 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Build and push Docker images
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
           for SERVICE in "${SERVICES[@]}"; do
-            docker build -t your_docker_username/$SERVICE:latest ./$SERVICE
-            docker push your_docker_username/$SERVICE:latest
+            docker build -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE
+            docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
           done
 
   deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
-    environment: production
+
     steps:
       - name: Deploy to server
-        run: echo "Deployment step goes here. Use /request-server command for actual deployment."
+        run: echo "Deployment step goes here. Use /reques

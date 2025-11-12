@@ -8,8 +8,12 @@ import { getRabbitMqConfig } from '../../config/rabbitmq.config';
   imports: [
     ClientsModule.register([
       {
-        name: 'NOTIFICATION_SERVICE',
-        ...getRabbitMqConfig('notification_queue'),
+        name: 'EMAIL_SERVICE_QUEUE',
+        ...getRabbitMqConfig('email_queue'),
+      },
+      {
+        name: 'PUSH_SERVICE_QUEUE',
+        ...getRabbitMqConfig('push_queue'),
       },
     ]),
   ],

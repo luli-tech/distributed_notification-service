@@ -42,10 +42,15 @@ services:
       - microservices
     volumes:
       - ../gateway:/app/gateway
-      - /app/gateway/node_modules
-    command: pnpm run start:dev
+    command: node dist/main.js
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "apk add --no-cache wget && wget --spider http://localhost:3000/health",
+        ]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -64,8 +69,7 @@ services:
       - microservices
     volumes:
       - ../user-service:/app/user-service
-      - /app/user-service/node_modules
-    command: pnpm run start
+    command: node dist/main.js
 
   # Email Service
   email-service:
@@ -81,8 +85,7 @@ services:
       - microservices
     volumes:
       - ../email-service:/app/email-service
-      - /app/email-service/node_modules
-    command: pnpm run start:dev
+    command: node dist/main.js
 
   # Template Service
   template-service:
@@ -98,8 +101,7 @@ services:
       - microservices
     volumes:
       - ../template-service:/app/template-service
-      - /app/template-service/node_modules
-    command: pnpm run start:dev
+    command: node dist/main.js
 
   # Queue Service
   queue-service:
@@ -115,8 +117,7 @@ services:
       - microservices
     volumes:
       - ../queue_service:/app/queue_service
-      - /app/queue_service/node_modules
-    command: pnpm run start:dev
+    command: node dist/main.js
 
 networks:
   microservices:

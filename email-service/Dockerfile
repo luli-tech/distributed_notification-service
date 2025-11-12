@@ -1,7 +1,7 @@
 # ------------------------
 # 🧱 Builder Stage
 # ------------------------
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app/email-service
 
@@ -18,7 +18,7 @@ ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 # Install Nest CLI globally
-RUN pnpm add -g @nestjs/cli@11.0.10
+## Removed unnecessary global installs
 
 # Copy all source files
 COPY . .
@@ -29,7 +29,7 @@ RUN pnpm run build
 # ------------------------
 # 🚀 Production Stage
 # ------------------------
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app/email-service
 
