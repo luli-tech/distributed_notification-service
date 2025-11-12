@@ -1,13 +1,11 @@
-version: "3.9"
-
 services:
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672" # RabbitMQ
-      - "15672:15672" # RabbitMQ Management UI
+      - "5672:5672"       # RabbitMQ
+      - "15672:15672"     # RabbitMQ Management UI
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -29,6 +27,17 @@ services:
     networks:
       - microservices
 
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices
+    volumes:
+      - redis_data:/data
+
   # Gateway
   gateway:
     build: ../gateway
@@ -36,8 +45,9 @@ services:
     env_file: ./env/gateway.env
     depends_on:
       - rabbitmq
+      - user-service
     ports:
-      - "3000:3000"
+      - "3000:3000"   # only gateway exposed to host
     networks:
       - microservices
 
@@ -49,8 +59,10 @@ services:
     depends_on:
       - rabbitmq
       - postgres
+      - redis
     networks:
       - microservices
+    # internal port 3000, no host mapping
 
   # Email Service
   email-service:
@@ -60,29 +72,23 @@ services:
     depends_on:
       - rabbitmq
       - postgres
+      - redis
     networks:
       - microservices
-
-  # Push Service
-  # push-service:
-  #   build: ../push-service
-  #   container_name: push-service
-  #   env_file: ./env/push-service.env
-  #   depends_on:
-  #     - rabbitmq
-  #   networks:
-  #     - microservices
+    # internal port 3000
 
   # Template Service
-  # template-service:
-  #   build: ../template-service
-  #   container_name: template-service
-  #   env_file: ./env/template-service.env
-  #   depends_on:
-  #     - rabbitmq
-  #     - postgres
-  #   networks:
-  #     - microservices
+  template-service:
+    build: ../template-service
+    container_name: template-service
+    env_file: ./env/template-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+      - redis
+    networks:
+      - microservices
+    # internal port 3000
 
   # Queue Service
   queue-service:
@@ -92,8 +98,10 @@ services:
     depends_on:
       - rabbitmq
       - postgres
+      - redis
     networks:
       - microservices
+    # internal port 3000
 
 networks:
   microservices:
@@ -101,3 +109,4 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:

@@ -95,10 +95,19 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
+  name: 'name',
   email: 'email',
-  notificationsEnabled: 'notificationsEnabled',
+  password: 'password',
+  pushToken: 'pushToken',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserPreferenceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  email: 'email',
+  push: 'push'
 };
 
 exports.Prisma.SortOrder = {
@@ -111,9 +120,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  UserPreference: 'UserPreference'
 };
 /**
  * Create the Client
@@ -126,7 +141,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\USER\\Desktop\\distributed notification service\\user-service\\generated\\prisma",
+      "value": "C:\\Users\\Oyewo\\projects\\distributed_notification-service\\user-service\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -140,7 +155,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\USER\\Desktop\\distributed notification service\\user-service\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Oyewo\\projects\\distributed_notification-service\\user-service\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -162,13 +177,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                   Int      @id @default(autoincrement())\n  email                String   @unique\n  notificationsEnabled Boolean  @default(true)\n  createdAt            DateTime @default(now())\n  updatedAt            DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "bd7c7a2edbea31fa87b175c0997ec7017cb4685fa2c833e91469a8e8c68cc53a",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id          String           @id @default(uuid())\n  name        String\n  email       String           @unique\n  password    String\n  pushToken   String?\n  preferences UserPreference[]\n  createdAt   DateTime         @default(now())\n  updatedAt   DateTime         @updatedAt\n}\n\nmodel UserPreference {\n  id     String  @id @default(uuid())\n  user   User    @relation(fields: [userId], references: [id])\n  userId String\n  email  Boolean @default(true)\n  push   Boolean @default(true)\n}\n",
+  "inlineSchemaHash": "cde7a10527e2238239232a97309d66f3e8b085f05fdabd2991bb2cf1ea4e5776",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notificationsEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pushToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"preferences\",\"kind\":\"object\",\"type\":\"UserPreference\",\"relationName\":\"UserToUserPreference\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"UserPreference\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserPreference\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"push\",\"kind\":\"scalar\",\"type\":\"Boolean\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
