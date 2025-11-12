@@ -1,13 +1,11 @@
-version: "3.9"
-
 services:
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672" # RabbitMQ
-      - "15672:15672" # RabbitMQ Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -31,7 +29,9 @@ services:
 
   # Gateway
   gateway:
-    build: ../gateway
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
     container_name: gateway
     env_file: ./env/gateway.env
     depends_on:
@@ -40,10 +40,21 @@ services:
       - "3000:3000"
     networks:
       - microservices
+    volumes:
+      - ../gateway:/app/gateway
+      - /app/gateway/node_modules
+    command: pnpm run start:dev
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   # User Service
   user-service:
-    build: ../user-service
+    build:
+      context: ../user-service
+      dockerfile: Dockerfile
     container_name: user-service
     env_file: ./env/user-service.env
     depends_on:
@@ -51,10 +62,16 @@ services:
       - postgres
     networks:
       - microservices
+    volumes:
+      - ../user-service:/app/user-service
+      - /app/user-service/node_modules
+    command: pnpm run start
 
   # Email Service
   email-service:
-    build: ../email-service
+    build:
+      context: ../email-service
+      dockerfile: Dockerfile
     container_name: email-service
     env_file: ./env/email-service.env
     depends_on:
@@ -62,31 +79,33 @@ services:
       - postgres
     networks:
       - microservices
-
-  # Push Service
-  # push-service:
-  #   build: ../push-service
-  #   container_name: push-service
-  #   env_file: ./env/push-service.env
-  #   depends_on:
-  #     - rabbitmq
-  #   networks:
-  #     - microservices
+    volumes:
+      - ../email-service:/app/email-service
+      - /app/email-service/node_modules
+    command: pnpm run start:dev
 
   # Template Service
-  # template-service:
-  #   build: ../template-service
-  #   container_name: template-service
-  #   env_file: ./env/template-service.env
-  #   depends_on:
-  #     - rabbitmq
-  #     - postgres
-  #   networks:
-  #     - microservices
+  template-service:
+    build:
+      context: ../template-service
+      dockerfile: Dockerfile
+    container_name: template-service
+    env_file: ./env/template-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+    volumes:
+      - ../template-service:/app/template-service
+      - /app/template-service/node_modules
+    command: pnpm run start:dev
 
   # Queue Service
   queue-service:
-    build: ../queue_service
+    build:
+      context: ../queue_service
+      dockerfile: Dockerfile
     container_name: queue-service
     env_file: ./env/queue-service.env
     depends_on:
@@ -94,6 +113,10 @@ services:
       - postgres
     networks:
       - microservices
+    volumes:
+      - ../queue_service:/app/queue_service
+      - /app/queue_service/node_modules
+    command: pnpm run start:dev
 
 networks:
   microservices:
