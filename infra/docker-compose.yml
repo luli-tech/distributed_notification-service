@@ -51,6 +51,8 @@ services:
       - postgres
     networks:
       - microservices
+    ports:
+      - "3000:3000"
 
   # Email Service
   email-service:
@@ -74,15 +76,17 @@ services:
   #     - microservices
 
   # Template Service
-  # template-service:
-  #   build: ../template-service
-  #   container_name: template-service
-  #   env_file: ./env/template-service.env
-  #   depends_on:
-  #     - rabbitmq
-  #     - postgres
-  #   networks:
-  #     - microservices
+  template-service:
+    build: ../template-service
+    container_name: template-service
+    env_file: ./env/template-service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+    ports:
+      - "3000:3000"
 
   # Queue Service
   queue-service:
