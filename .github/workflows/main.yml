@@ -97,23 +97,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your repository
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js first
+      # 2️⃣ Install system dependencies for native modules
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      # 3️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Setup PNPM (same version as local dev)
+      # 4️⃣ Setup PNPM
       - name: Setup PNPM
         uses: pnpm/action-setup@v3
         with:
           version: 10.18.0
 
-      # 4️⃣ Cache PNPM store for faster installs
+      # 5️⃣ Cache PNPM store for faster installs
       - name: Cache PNPM store
         uses: actions/cache@v4
         with:
@@ -122,19 +126,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # 5️⃣ Install dependencies from the monorepo root
+      # 6️⃣ Install dependencies for all workspaces
       - name: Install dependencies
         run: pnpm install
 
-      # 6️⃣ Approve build scripts for packages like prisma/bcrypt
+      # 7️⃣ Approve build scripts (without --all, compatible with pnpm v10)
       - name: Approve PNPM build scripts
-        run: pnpm approve-builds --all
+        run: pnpm approve-builds
 
-      # 7️⃣ Build all workspace packages recursively
+      # 8️⃣ Build all workspace packages
       - name: Build services
         run: pnpm -r run build
 
-      # 8️⃣ Run tests for all workspaces
+      # 9️⃣ Run tests for all workspace packages
       - name: Run tests
         run: pnpm -r run test
 
@@ -153,7 +157,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push Docker images for each service
+      # Build and push Docker images
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
