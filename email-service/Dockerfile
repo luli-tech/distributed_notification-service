@@ -1,28 +1,92 @@
+# # ------------------------
+# # Builder Stage
+# # ------------------------
+# FROM node:20-alpine AS builder
+# WORKDIR /app/email-service
+
+# # Enable Corepack and activate pnpm
+# RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# # Copy package.json and lockfile
+# COPY package.json pnpm-lock.yaml ./
+
+# # Install all dependencies (dev + prod) to build
+# RUN pnpm install --no-frozen-lockfile
+
+
+# # Copy the rest of the source code
+# COPY . .
+
+# # Build the project
+# RUN pnpm run build
+
+# # ------------------------
+# # Production Stage
+# # ------------------------
+# FROM node:20-alpine AS production
+# WORKDIR /app/email-service
+
+# # Enable Corepack
+# RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# # Copy package.json and lockfile
+# COPY package.json pnpm-lock.yaml ./
+
+# # Install only production dependencies
+# RUN pnpm install --prod --no-frozen-lockfile
+
+
+# # Copy built files from builder stage
+# COPY --from=builder /app/email-service/dist ./dist
+
+# # Expose port and define start command
+# EXPOSE 3000
+# CMD ["node", "dist/main.js"]
+
+
 # ------------------------
-#  Builder Stage
+# Builder Stage
 # ------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app/email-service
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install bash (optional, helps pnpm scripts) and corepack
+RUN apk add --no-cache bash git python3 make g++ \
+    && corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+
+# Install all dependencies (dev + prod)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
+
+# Copy the rest of the source code
 COPY . .
+
+# Build the project
 RUN pnpm run build
 
 # ------------------------
-# 🚀 Production Stage
+# Production Stage
 # ------------------------
 FROM node:20-alpine AS production
 WORKDIR /app/email-service
 
-# Enable pnpm
+# Install runtime dependencies
+RUN apk add --no-cache bash git python3 make g++
+
+# Enable Corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy production-ready files
-COPY --from=builder /app/email-service/dist ./dist
-COPY --from=builder /app/email-service/node_modules ./node_modules
-COPY --from=builder /app/email-service/package.json ./package.json
+# Copy package.json and lockfile
+COPY package.json pnpm-lock.yaml ./
 
-# Start the service
-CMD ["node", "dist/main"]
+# Install only production dependencies, ignoring scripts
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
+
+# Copy built files from builder stage
+COPY --from=builder /app/email-service/dist ./dist
+
+# Expose port and define start command
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
