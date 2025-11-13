@@ -1,32 +1,43 @@
-# ------------------------
-#  Builder Stage
-# ------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app/template-service
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install bash (optional, helps pnpm scripts) and corepack
+RUN apk add --no-cache bash git python3 make g++ \
+    && corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+
+# Install all dependencies (dev + prod)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
+
+# Copy the rest of the source code
 COPY . .
+
+# Build the project
 RUN pnpm run build
 
 # ------------------------
-# 🚀 Production Stage
+# Production Stage
 # ------------------------
 FROM node:20-alpine AS production
 WORKDIR /app/template-service
 
-# Enable pnpm
+# Install runtime dependencies
+RUN apk add --no-cache bash git python3 make g++
+
+# Enable Corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy production-ready files
+# Copy package.json and lockfile
+COPY package.json pnpm-lock.yaml ./
+
+# Install only production dependencies, ignoring scripts
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
+
+# Copy built files from builder stage
 COPY --from=builder /app/template-service/dist ./dist
-COPY --from=builder /app/template-service/node_modules ./node_modules
-COPY --from=builder /app/template-service/package.json ./package.json
 
-# Start the service
-CMD ["node", "dist/main"]
-
-
-
-
+# Expose port and define start command
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
