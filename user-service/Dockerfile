@@ -8,14 +8,14 @@ WORKDIR /app/user-service
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy the workspace lockfile and service package.json
-COPY ../../pnpm-lock.yaml ./pnpm-lock.yaml
-COPY package.json ./
+COPY pnpm-lock.yaml ./pnpm-lock.yaml
+COPY user-service/package.json ./package.json
 
 # Install dependencies (using frozen lockfile for consistency)
 RUN pnpm install --frozen-lockfile
 
 # Copy service source code
-COPY . .
+COPY user-service ./ 
 
 # Build the service
 RUN pnpm run build
