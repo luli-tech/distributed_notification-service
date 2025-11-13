@@ -13,24 +13,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your repository
+      # 1Checkout your repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup PNPM FIRST
+      #  Setup PNPM FIRST
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 9 # or 'latest'
 
-      # 3️⃣ Then setup Node (after pnpm is ready)
+      # Then setup Node (after pnpm is ready)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+        
 
-      # 4️⃣ Cache pnpm store
+      # 4 Cache pnpm store
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
@@ -39,15 +39,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # 5️⃣ Install dependencies (now pnpm exists)
+      #  Install dependencies (now pnpm exists)
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 6️⃣ Build all workspace packages
+      #  Build all workspace packages
       - name: Build services
         run: pnpm -r run build
 
-      # 7️⃣ Run tests
+      #  Run tests
       - name: Run tests
         run: pnpm -r run test
 
