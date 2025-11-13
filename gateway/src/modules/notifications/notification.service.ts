@@ -11,7 +11,7 @@ export class NotificationService {
     @Inject('EMAIL_SERVICE_QUEUE') private emailClient: ClientProxy,
     @Inject('PUSH_SERVICE_QUEUE') private pushClient: ClientProxy,
     @Inject('USER_SERVICE') private userServiceClient: ClientProxy,
-    private readonly redisService: RedisService, // Inject RedisService
+    private readonly redisService: RedisService,
   ) {}
 
   async sendEmailNotification(data: any, user_id: string) {

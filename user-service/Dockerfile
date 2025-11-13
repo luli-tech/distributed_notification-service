@@ -38,6 +38,7 @@ RUN pnpm install --prod --no-frozen-lockfile
 
 # Copy built files from builder stage
 COPY --from=builder /app/user-service/dist ./dist
+COPY --from=builder /app/user-service/generated ./generated
 
 # Expose port and define start command
 EXPOSE 3000

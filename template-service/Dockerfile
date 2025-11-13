@@ -9,7 +9,7 @@ RUN apk add --no-cache bash git python3 make g++ \
 COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (dev + prod)
-RUN pnpm install --no-frozen-lockfile --ignore-scripts
+RUN pnpm install --no-frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .
@@ -32,8 +32,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
 
-# Install only production dependencies, ignoring scripts
-RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
+# Install only production dependencies
+RUN pnpm install --prod --no-frozen-lockfile
 
 # Copy built files from builder stage
 COPY --from=builder /app/template-service/dist ./dist

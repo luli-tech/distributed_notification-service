@@ -15,6 +15,10 @@ import { getRabbitMqConfig } from '../../config/rabbitmq.config';
         name: 'PUSH_SERVICE_QUEUE',
         ...getRabbitMqConfig('push_queue'),
       },
+      {
+        name: 'USER_SERVICE',
+        ...getRabbitMqConfig('user_queue'),
+      },
     ]),
   ],
   controllers: [NotificationController],
