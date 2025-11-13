@@ -1,0 +1,7 @@
+packages:
+  - "gateway"
+  - "user-service"
+  - "email-service"
+  - "push_service"
+  - "template-service"
+  - "queue_service"

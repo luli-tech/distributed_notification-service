@@ -11,6 +11,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
       # Checkout code
       - name: Checkout code
@@ -21,12 +22,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20"
+          cache: "pnpm"
 
       # Install pnpm
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # Cache pnpm dependencies
+      # Cache pnpm store
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
@@ -35,23 +37,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # Install dependencies
+      # Install dependencies (workspace aware)
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build services
+      # Build all packages in the workspace
       - name: Build services
-        run: pnpm recursive run build
+        run: pnpm -r run build
 
-      # Run tests
+      # Run tests across all packages
       - name: Run tests
-        run: pnpm recursive run test
+        run: pnpm -r run test
 
   docker-build-and-push:
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -62,7 +64,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push Docker images with no-cache
+      # Build and push Docker images
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
@@ -80,4 +82,4 @@ jobs:
       - name: Deploy to server
         run: |
           echo "Deployment step goes here."
-          echo "You can use SSH or cloud CLI commands to pull the new images and restart services."
+          echo "Use SSH or your cloud CLI to pull new images and restart services."
