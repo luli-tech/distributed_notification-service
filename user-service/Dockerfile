@@ -4,20 +4,20 @@
 FROM node:20-alpine AS builder
 WORKDIR /app/user-service
 
-# Enable pnpm
+# Enable Corepack and activate pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy package.json and lockfile
-COPY package.json ./pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
+# Install all dependencies (dev + prod) to build
 RUN pnpm install --no-frozen-lockfile
 
 
-# Copy service source code
+# Copy the rest of the source code
 COPY . .
 
-# Build the service
+# Build the project
 RUN pnpm run build
 
 # ------------------------
@@ -26,13 +26,18 @@ RUN pnpm run build
 FROM node:20-alpine AS production
 WORKDIR /app/user-service
 
-# Enable pnpm
+# Enable Corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy production build from builder
-COPY --from=builder /app/user-service/dist ./dist
-COPY --from=builder /app/user-service/node_modules ./node_modules
-COPY --from=builder /app/user-service/package.json ./
+# Copy package.json and lockfile
+COPY package.json pnpm-lock.yaml ./
 
-# Start the service
-CMD ["node", "dist/main"]
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built files from builder stage
+COPY --from=builder /app/user-service/dist ./dist
+
+# Expose port and define start command
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
