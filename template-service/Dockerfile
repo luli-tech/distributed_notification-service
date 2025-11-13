@@ -1,13 +1,32 @@
-FROM node:18-alpine AS development
+# ------------------------
+#  Builder Stage
+# ------------------------
+FROM node:20-alpine AS builder
 WORKDIR /app/template-service
-COPY pnpm-lock.yaml package.json ./
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-FROM node:18-alpine AS production
+# ------------------------
+# 🚀 Production Stage
+# ------------------------
+FROM node:20-alpine AS production
 WORKDIR /app/template-service
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
-COPY . .
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy production-ready files
+COPY --from=builder /app/template-service/dist ./dist
+COPY --from=builder /app/template-service/node_modules ./node_modules
+COPY --from=builder /app/template-service/package.json ./package.json
+
+# Start the service
 CMD ["node", "dist/main"]
+
+
+
+

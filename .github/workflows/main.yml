@@ -12,7 +12,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      #  Checkout code
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -20,13 +20,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "20"
 
-      #  Install pnpm
+      # Install pnpm
       - name: Install pnpm
         run: npm install -g pnpm
 
-      #  Cache pnpm dependencies
+      # Cache pnpm dependencies
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
@@ -35,11 +35,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      #  Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      #  Build services
+      # Build services
       - name: Build services
         run: pnpm recursive run build
 
@@ -62,19 +62,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push Docker images
+      # Build and push Docker images with no-cache
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
           for SERVICE in "${SERVICES[@]}"; do
-            docker build -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE
+            echo "Building $SERVICE..."
+            docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE
+            echo "Pushing $SERVICE..."
             docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
           done
 
   deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
-
     steps:
       - name: Deploy to server
-        run: echo "Deployment step goes here. Use /reques
+        run: |
+          echo "Deployment step goes here."
+          echo "You can use SSH or cloud CLI commands to pull the new images and restart services."
