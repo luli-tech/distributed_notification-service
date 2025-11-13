@@ -17,16 +17,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Node.js
+      # Set up Node.js (includes cache support)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
           cache: "pnpm"
 
-      # Install pnpm
+      # ✅ Properly install pnpm
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9 # or "latest"
 
       # Cache pnpm store
       - name: Cache pnpm store
@@ -37,15 +39,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # Install dependencies (workspace aware)
+      # Install all workspace dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build all packages in the workspace
+      # Build all packages (recursively in the workspace)
       - name: Build services
         run: pnpm -r run build
 
-      # Run tests across all packages
+      # Run all tests
       - name: Run tests
         run: pnpm -r run test
 
@@ -82,4 +84,4 @@ jobs:
       - name: Deploy to server
         run: |
           echo "Deployment step goes here."
-          echo "Use SSH or your cloud CLI to pull new images and restart services."
+          echo "Use SSH or your cloud CLI to pull the latest images and restart services."
