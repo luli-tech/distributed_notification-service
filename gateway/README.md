@@ -1,98 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Gateway
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Gateway is the HTTP API entry point for the distributed notification system. It exposes REST endpoints for creating and managing notifications and user-facing operations, and forwards messages to the queue when needed.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This service is implemented with NestJS and is intended to run as the public-facing API (or behind a load balancer / API gateway in production).
 
-## Description
+Key files
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Source: `src/`
+- Config: `src/config/` (see `app.config.ts` and `rabbitmq.config.ts`)
+- Dockerfile: `Dockerfile`
 
-## Project setup
+Prerequisites
+
+- Node.js 16+ (or as defined in the service package.json)
+- pnpm (recommended) or npm/yarn
+- RabbitMQ when running the full system
+
+Quick start (local - development)
 
 ```bash
-$ pnpm install
+cd gateway
+pnpm install
+# start in watch mode
+pnpm run start:dev
 ```
 
-## Compile and run the project
+Quick start (Docker Compose - full stack)
+
+From repository root (uses `infra/docker-compose.yml`):
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+cd infra
+docker compose up --build
 ```
 
-## Run tests
+Available npm scripts
+
+- `pnpm run start` - start application
+- `pnpm run start:dev` - start in watch mode (recommended for development)
+- `pnpm run start:prod` - start compiled production bundle
+- `pnpm run build` - compile TypeScript
+- `pnpm run lint` - run ESLint
+- `pnpm run test` / `pnpm run test:e2e` - run unit/e2e tests
+
+Configuration and environment
+
+- Port: defaults to `3000` (controlled by `process.env.PORT` in `src/main.ts`).
+- RabbitMQ connection: set `RABBITMQ_URL` (or use the value in `src/config/rabbitmq.config.ts`).
+- Inspect `src/config` for other environment values used by the gateway.
+
+Docker
+
+- Build: `docker build -t gateway ./gateway`
+- The repository includes a `Dockerfile` for containerized runs; the `infra/` compose file demonstrates composing this service with the rest of the stack.
+
+Testing
+
+- Unit tests and e2e tests are available. Run locally per scripts:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm run test
+pnpm run test:e2e
 ```
 
-## Deployment
+Troubleshooting
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- If the service cannot reach RabbitMQ, ensure `RABBITMQ_URL` matches the broker address and credentials.
+- Use `docker compose logs -f` (from `infra/`) to inspect container logs when running the full stack.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Notes
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- This README provides a quick developer guide — check per-service configuration files for advanced settings and environment variables.
