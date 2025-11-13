@@ -26,6 +26,8 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.1",
     "@nestjs/throttler": "^2.0.1",
+    "@nestjs/config": "^2.3.0",
+    "jsonwebtoken": "^9.0.0",
     "@prisma/client": "^6.19.0",
     "@types/bcrypt": "^6.0.0",
     "amqp-connection-manager": "^5.0.0",
@@ -45,6 +47,7 @@
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
@@ -82,5 +85,5 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
-  "packageManager": "pnpm@10.21.0+sha512.da3337267e400fdd3d479a6c68079ac6db01d8ca4f67572083e722775a796788a7a9956613749e000fac20d424b594f7a791a5f4e2e13581c5ef947f26968a40"
+  "packageManager": "pnpm@10.21.0"
 }
