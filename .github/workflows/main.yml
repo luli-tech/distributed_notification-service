@@ -13,60 +13,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
+      # 1️⃣ Checkout your repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Set up Node.js (includes cache support)
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      # ✅ Properly install pnpm
-      - name: Install pnpm
+      # 2️⃣ Setup PNPM FIRST
+      - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 9 # or "latest"
+          version: 9 # or 'latest'
 
-      # Cache pnpm store
+      # 3️⃣ Then setup Node (after pnpm is ready)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # 4️⃣ Cache pnpm store
       - name: Cache pnpm store
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # Install all workspace dependencies
+      # 5️⃣ Install dependencies (now pnpm exists)
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build all packages (recursively in the workspace)
+      # 6️⃣ Build all workspace packages
       - name: Build services
         run: pnpm -r run build
 
-      # Run all tests
+      # 7️⃣ Run tests
       - name: Run tests
         run: pnpm -r run test
 
   docker-build-and-push:
     needs: build-and-test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Login to Docker Hub
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push Docker images
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
@@ -84,4 +81,4 @@ jobs:
       - name: Deploy to server
         run: |
           echo "Deployment step goes here."
-          echo "Use SSH or your cloud CLI to pull the latest images and restart services."
+          echo "Use SSH or cloud CLI to pull latest images and restart services."
