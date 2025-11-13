@@ -1,7 +1,19 @@
 {
   "name": "distributed-notification-service",
   "private": true,
+  "workspaces": [
+    "gateway",
+    "user-service",
+    "email-service",
+    "push_service",
+    "template-service",
+    "queue_service"
+  ],
   "devDependencies": {
     "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test"
   }
 }
