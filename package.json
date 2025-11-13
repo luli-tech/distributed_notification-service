@@ -1,0 +1,7 @@
+{
+  "name": "distributed-notification-service",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

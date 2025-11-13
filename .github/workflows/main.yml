@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -117,34 +117,41 @@ jobs:
         with:
           version: 10.18.0
 
-      # 5️⃣ Cache PNPM store for faster installs
+      # 5️⃣ Cache PNPM store and node_modules
       - name: Cache PNPM store
         uses: actions/cache@v4
         with:
-          path: ~/.pnpm-store
+          path: |
+            ~/.pnpm-store
+            node_modules
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # 6️⃣ Install dependencies for all workspaces
+      # 6️⃣ Install dependencies from root
       - name: Install dependencies
         run: pnpm install
+        working-directory: ./ # ensure this is repo root
 
-      # 7️⃣ Approve build scripts (without --all, compatible with pnpm v10)
+      # 7️⃣ Approve PNPM build scripts
       - name: Approve PNPM build scripts
         run: pnpm approve-builds
+        working-directory: ./
 
-      # 8️⃣ Build all workspace packages
+      # 8️⃣ Build all workspace packages recursively
       - name: Build services
         run: pnpm -r run build
+        working-directory: ./
 
-      # 9️⃣ Run tests for all workspace packages
+      # 9️⃣ Run tests for all workspaces
       - name: Run tests
         run: pnpm -r run test
+        working-directory: ./
 
   docker-build-and-push:
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
       # Checkout repo again
       - name: Checkout code
@@ -157,7 +164,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build and push Docker images
+      # Build and push Docker images for each service
       - name: Build and push Docker images
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
@@ -171,6 +178,7 @@ jobs:
   deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to server
         run: |
