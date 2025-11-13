@@ -55,21 +55,36 @@ services:
       timeout: 3s
       retries: 3
 
-  # User Service
-  user-service:
-    build:
-      context: ..
-      dockerfile: user-service/Dockerfile
-    container_name: user-service
-    env_file: ./env/user-service.env
-    depends_on:
-      - rabbitmq
-      - postgres
-    networks:
-      - microservices
-    volumes:
-      - ../user-service:/app/user-service
-    command: node dist/main.js
+    # User Service
+    # user-service:
+    #   build:
+    #     context: ..
+    #     dockerfile: user-service/Dockerfile
+    #   container_name: user-service
+    #   env_file: ./env/user-service.env
+    #   depends_on:
+    #     - rabbitmq
+    #     - postgres
+    #   networks:
+    #     - microservices
+    #   volumes:
+    #     - ../user-service:/app/user-service
+    #   command: node dist/main.js
+
+    user-service:
+  build:
+    context: .. # root of the monorepo
+    dockerfile: user-service/Dockerfile
+  container_name: user-service
+  env_file: ./env/user-service.env
+  depends_on:
+    - rabbitmq
+    - postgres
+  networks:
+    - microservices
+  command: node dist/main.js
+  ports:
+    - "3001:3001"
 
   # Email Service
   email-service:
