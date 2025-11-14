@@ -16,6 +16,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse as SwaggerApiResponse,
+  ApiParam,
 } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -38,7 +39,7 @@ export class UserController {
     status: 409,
     description: "User with this email already exists.",
   })
-  @UsePipes(new ValidationPipe({ transform: true }))
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createUserDto: CreateUserDto
   ): Promise<ApiResponse<any>> {
@@ -55,7 +56,7 @@ export class UserController {
   })
   @SwaggerApiResponse({ status: 401, description: "Invalid credentials." })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
-  @UsePipes(new ValidationPipe({ transform: true }))
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async login(
     @Body() loginUserDto: LoginUserDto
   ): Promise<ApiResponse<{ access_token: string; user: any }>> {
@@ -71,6 +72,7 @@ export class UserController {
   @ApiOperation({ summary: "Get user by ID" })
   @SwaggerApiResponse({ status: 200, description: "User data retrieved." })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
+  @ApiParam({ name: "id", description: "User ID", type: String })
   async find_one(@Param("id") id: string): Promise<ApiResponse<any>> {
     const user = await this.userService.find_one(parseInt(id, 10));
     return {
@@ -84,6 +86,7 @@ export class UserController {
   @ApiOperation({ summary: "Get user by email" })
   @SwaggerApiResponse({ status: 200, description: "User data retrieved." })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
+  @ApiParam({ name: "email", description: "User email", type: String })
   async find_by_email(
     @Param("email") email: string
   ): Promise<ApiResponse<any>> {
@@ -102,7 +105,8 @@ export class UserController {
     description: "Notification preferences updated.",
   })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
-  @UsePipes(new ValidationPipe({ transform: true }))
+  @ApiParam({ name: "id", description: "User ID", type: String })
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async update_notification_preferences(
     @Param("id") id: string,
     @Body() updateDto: UpdateNotificationPreferencesDto
@@ -126,6 +130,7 @@ export class UserController {
     description: "User successfully deleted.",
   })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
+  @ApiParam({ name: "id", description: "User ID", type: String })
   async delete_user(@Param("id") id: string): Promise<ApiResponse<null>> {
     await this.userService.delete_user(parseInt(id, 10));
     return { success: true, message: "User deleted successfully" };

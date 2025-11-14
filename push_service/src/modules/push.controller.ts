@@ -23,7 +23,7 @@ export class PushController {
   ) {}
 
   @Post("send")
-  @UsePipes(new ValidationPipe({ transform: true }))
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async sendPush(@Body() sendPushDto: SendPushDto) {
     // Idempotency: Use unique request_id
     const requestId = sendPushDto.request_id;
