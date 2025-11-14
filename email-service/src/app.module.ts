@@ -3,6 +3,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
 import { ClientsModule } from "@nestjs/microservices";
 import { TerminusModule } from "@nestjs/terminus";
 import { HttpModule } from "@nestjs/axios";
+import { ConfigModule } from "@nestjs/config"; // Import ConfigModule
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { getRabbitMqConfig } from "./config/rabbitmq.config";
@@ -21,6 +22,10 @@ import { HealthController } from "./health.controller";
     EmailModule,
     TerminusModule,
     HttpModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: "./infra/env/email-service.env",
+    }),
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
