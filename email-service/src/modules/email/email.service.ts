@@ -26,9 +26,10 @@ export class EmailService {
 
     const mail = {
       to: sendEmailDto.recipient,
-      from: sendEmailDto.from,
+      from: this.configService.get<string>("SENDGRID_SENDER_EMAIL"),
       subject: sendEmailDto.subject,
-      html: sendEmailDto.body,
+      templateId: sendEmailDto.template_name,
+      dynamicTemplateData: sendEmailDto.template_variables,
     };
 
     try {

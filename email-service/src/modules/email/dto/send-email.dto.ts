@@ -1,6 +1,8 @@
+import { IsEmail, IsNotEmpty, IsString, IsObject } from "class-validator";
+
 export class SendEmailDto {
   recipient: string;
-  from: string;
   subject: string;
-  body: string;
+  template_name: string;
+  template_variables: Record<string, any>;
 }

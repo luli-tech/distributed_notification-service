@@ -9,7 +9,7 @@ export class EmailController {
 
   constructor(private readonly emailService: EmailService) {}
 
-  @EventPattern("send_email")
+  @EventPattern("send_email_notification")
   async handleSendEmail(@Payload() data: SendEmailDto) {
     this.logger.log(
       `EmailController: Received send_email event with data: ${JSON.stringify(

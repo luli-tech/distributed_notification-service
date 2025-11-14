@@ -29,7 +29,10 @@ export class NotificationService {
     while (attempts < maxAttempts && !sent) {
       try {
         await this.emailClient.emit('send_email_notification', {
-          ...data,
+          recipient: data.recipient,
+          subject: data.subject,
+          template_name: data.template_name,
+          template_variables: data.template_variables,
           user_id,
           notification_id,
         });
