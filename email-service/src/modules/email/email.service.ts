@@ -1,4 +1,3 @@
-// email.service.ts
 import { Injectable, Logger } from "@nestjs/common";
 import { SendEmailDto } from "./dto/send-email.dto";
 import sgMail from "@sendgrid/mail"; // ← DEFAULT IMPORT
@@ -12,11 +11,17 @@ export class EmailService {
     const apiKey = this.configService.get<string>("SENDGRID_API_KEY");
     if (!apiKey) {
       this.logger.error("SENDGRID_API_KEY is missing!");
-      return;
+      throw new Error("SENDGRID_API_KEY is not configured.");
     }
 
-    sgMail.setApiKey(apiKey); // ← CORRECT
+    sgMail.setApiKey(apiKey);
     this.logger.log("SendGrid API key configured");
+
+    const senderEmail = this.configService.get<string>("SENDGRID_SENDER_EMAIL");
+    if (!senderEmail) {
+      this.logger.error("SENDGRID_SENDER_EMAIL is missing!");
+      throw new Error("SENDGRID_SENDER_EMAIL is not configured.");
+    }
   }
 
   async processEmail(sendEmailDto: SendEmailDto) {
@@ -24,23 +29,23 @@ export class EmailService {
       `Processing email for recipient: ${sendEmailDto.recipient}`
     );
 
+    const senderEmail = this.configService.get<string>("SENDGRID_SENDER_EMAIL");
     const mail = {
       to: sendEmailDto.recipient,
-      from: this.configService.get<string>("SENDGRID_SENDER_EMAIL"),
+      from: senderEmail,
       subject: sendEmailDto.subject,
       templateId: sendEmailDto.template_name,
       dynamicTemplateData: sendEmailDto.template_variables,
     };
 
     try {
-      await sgMail.send(mail); // ← CORRECT
       this.logger.log(`Email sent to ${sendEmailDto.recipient}`);
     } catch (error: any) {
       this.logger.error(
         `Failed to send email to ${sendEmailDto.recipient}`,
         error.response?.body || error.message
       );
-      throw error; // Optional: re-throw if you want caller to handle
+      throw error;
     }
   }
 }
