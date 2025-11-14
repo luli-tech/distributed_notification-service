@@ -30,7 +30,7 @@ export class UserService {
         email: createUserDto.email,
         name: createUserDto.name,
         password_hash,
-        push_token: createUserDto.push_token,
+        // push_token: createUserDto.push_token,
         notifications_enabled: createUserDto.notifications_enabled,
       },
     });
