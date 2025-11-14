@@ -12,6 +12,7 @@ import {
   HttpStatus,
   NotFoundException,
 } from "@nestjs/common";
+import { MessagePattern, Payload } from "@nestjs/microservices"; // New import
 import {
   ApiTags,
   ApiOperation,
@@ -22,12 +23,54 @@ import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateNotificationPreferencesDto } from "./dto/update-notification-preferences.dto";
 import { LoginUserDto } from "./dto/login-user.dto";
+import { UpdatePushTokenDto } from "./dto/update-push-token.dto"; // New import
 import { ApiResponse } from "../../common/interfaces/api-response.interface"; // Corrected import path
 
 @ApiTags("Users")
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @MessagePattern("register_user")
+  async registerUserMicroservice(@Payload() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
+  @MessagePattern("login_user")
+  async loginUserMicroservice(@Payload() loginUserDto: LoginUserDto) {
+    return this.userService.login(loginUserDto);
+  }
+
+  @MessagePattern("update_push_token")
+  async updatePushTokenMicroservice(
+    @Payload() data: { id: number; push_token?: string }
+  ) {
+    return this.userService.updatePushToken(data.id, data.push_token);
+  }
+
+  @Patch(":id/push-token")
+  @ApiOperation({ summary: "Update user push token" })
+  @SwaggerApiResponse({
+    status: 200,
+    description: "Push token updated.",
+  })
+  @SwaggerApiResponse({ status: 404, description: "User not found." })
+  @ApiParam({ name: "id", description: "User ID", type: String })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updatePushToken(
+    @Param("id") id: string,
+    @Body() updatePushTokenDto: UpdatePushTokenDto
+  ): Promise<ApiResponse<any>> {
+    const user = await this.userService.updatePushToken(
+      parseInt(id, 10),
+      updatePushTokenDto.push_token
+    );
+    return {
+      success: true,
+      data: user,
+      message: "Push token updated successfully",
+    };
+  }
 
   @Post()
   @ApiOperation({ summary: "Create a new user" })

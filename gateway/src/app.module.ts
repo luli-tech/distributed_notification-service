@@ -52,8 +52,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply((req: Request, res: Response, next: NextFunction) => {
-        // This is a global middleware, useful for logging or other cross-cutting concerns
-        // For authentication, we're using a guard, but this demonstrates middleware usage
         next();
       })
       .forRoutes('*');

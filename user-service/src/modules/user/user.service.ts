@@ -30,7 +30,7 @@ export class UserService {
         email: createUserDto.email,
         name: createUserDto.name,
         password_hash,
-        // push_token: createUserDto.push_token,
+        push_token: createUserDto.push_token,
         notifications_enabled: createUserDto.notifications_enabled,
       },
     });
@@ -124,5 +124,15 @@ export class UserService {
       throw new NotFoundException("User not found");
     }
     return { notifications_enabled: user.notifications_enabled };
+  }
+
+  async updatePushToken(user_id: number, push_token?: string) {
+    const user = await this.prisma.user.update({
+      where: { id: user_id },
+      data: { push_token },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password_hash: _, ...result } = user;
+    return result;
   }
 }
