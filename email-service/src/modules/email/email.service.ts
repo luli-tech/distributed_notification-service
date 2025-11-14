@@ -8,7 +8,9 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private readonly configService: ConfigService) {
-    SendGrid.setApiKey(this.configService.get<string>("SENDGRID_API_KEY"));
+    SendGrid.setApiKey(
+      this.configService.get<string>("SENDGRID_API_KEY") ?? ""
+    );
   }
 
   async processEmail(sendEmailDto: SendEmailDto) {
@@ -18,7 +20,7 @@ export class EmailService {
 
     const mail = {
       to: sendEmailDto.recipient,
-      from: sendEmailDto.from, // Make sure to add 'from' to SendEmailDto
+      from: sendEmailDto.from,
       subject: sendEmailDto.subject,
       html: sendEmailDto.body,
     };
