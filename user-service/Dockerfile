@@ -19,6 +19,7 @@ COPY . .
 
 # Build the project
 RUN pnpm run build
+RUN ls -la dist
 
 # ------------------------
 # Production Stage
