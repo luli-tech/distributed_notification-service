@@ -102,7 +102,7 @@ services:
       - microservices
     volumes:
       - ../push_service:/app/push_service
-    command: node dist/src/main.js # ← FIX THIS LINE
+    command: node dist/main.js
 
   # Template Service
   template-service:

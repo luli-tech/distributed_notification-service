@@ -1,23 +1,43 @@
 import { Module, Logger, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule } from '@nestjs/config';
+import { ThrottlerStorageRedisModule } from '@nestjs/throttler-storage-redis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { getRabbitMqConfig } from './config/rabbitmq.config';
 import { NotificationsModule } from './modules/notifications/notification.module';
 import { UserModule } from './modules/user/user.module';
-import { RedisModule } from './modules/redis/redis.module'; // Import RedisModule
-import { Request, Response, NextFunction } from 'express'; // Import Request from express
+import { RedisModule } from './modules/redis/redis.module';
+import { Request, Response, NextFunction } from 'express';
+import * as Joi from 'joi';
 
 const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
 Logger.log(`RabbitMQ URL: ${rabbitMqUrl}`, 'AppModule');
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 20,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: './infra/env/gateway.env',
+      validationSchema: Joi.object({
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().required(),
+        REDIS_PASSWORD: Joi.string().allow('').optional(),
+      }),
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ttl: 60,
+        limit: 20,
+        storage: new ThrottlerStorageRedisModule({
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+          password: configService.get<string>('REDIS_PASSWORD'),
+        }),
+      }),
     }),
     ClientsModule.register([
       {
@@ -39,11 +59,7 @@ Logger.log(`RabbitMQ URL: ${rabbitMqUrl}`, 'AppModule');
     ]),
     NotificationsModule,
     UserModule,
-    RedisModule, // Add RedisModule to imports
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: './infra/env/gateway-service.env',
-    }),
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -52,8 +68,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply((req: Request, res: Response, next: NextFunction) => {
-        // This is a global middleware, useful for logging or other cross-cutting concerns
-        // For authentication, we're using a guard, but this demonstrates middleware usage
         next();
       })
       .forRoutes('*');
