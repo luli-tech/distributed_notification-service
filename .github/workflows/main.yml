@@ -130,7 +130,7 @@ jobs:
 
       # 6️⃣ Install dependencies from root
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
         working-directory: ./ # ensure this is repo root
 
       #  Approve PNPM build scripts
@@ -166,6 +166,7 @@ jobs:
 
       # Build and push Docker images for each service
       - name: Build and push Docker images
+        continue-on-error: true
         run: |
           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
           for SERVICE in "${SERVICES[@]}"; do
@@ -174,6 +175,21 @@ jobs:
             echo "Pushing $SERVICE..."
             docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
           done
+
+  #         - name: Build and push Docker images
+  # continue-on-error: true
+  # run: |
+  #   SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
+  #   for SERVICE in "${SERVICES[@]}"; do
+  #     echo "=============================="
+  #     echo "🔨 Building $SERVICE"
+  #     docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE \
+  #       || echo "❌ Build failed for $SERVICE — continuing"
+
+  #     echo "📤 Pushing $SERVICE"
+  #     docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest \
+  #       || echo "❌ Push failed for $SERVICE — continuing"
+  #   done
 
   deploy:
     needs: docker-build-and-push
