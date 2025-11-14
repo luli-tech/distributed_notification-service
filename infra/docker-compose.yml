@@ -89,6 +89,21 @@ services:
       - ../email-service:/app/email-service
     command: node dist/main.js
 
+  push_service:
+    build:
+      context: ../push_service
+      dockerfile: Dockerfile
+    container_name: push_service
+    env_file: ./env/push_service.env
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - microservices
+    volumes:
+      - ../push_service:/app/push_service
+    command: node dist/src/main.js # ← FIX THIS LINE
+
   # Template Service
   template-service:
     build:
