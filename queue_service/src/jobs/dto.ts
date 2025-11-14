@@ -25,3 +25,8 @@ export class EmailSendRequestDto {
   @IsOptional()
   variables?: Record<string, string>;
 }
+
+export class ScheduledTaskEventDto {
+  @IsString()
+  timestamp: string;
+}

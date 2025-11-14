@@ -64,7 +64,9 @@ services:
     env_file: ./env/user-service.env
     depends_on:
       - rabbitmq
+      - redis
       - postgres
+      - redis
     networks:
       - microservices
     volumes:
@@ -118,6 +120,14 @@ services:
     volumes:
       - ../queue_service:/app/queue_service
     command: node dist/main.js
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices
 
 networks:
   microservices:
