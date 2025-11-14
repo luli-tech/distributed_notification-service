@@ -10,9 +10,11 @@ import Redis from 'ioredis';
     {
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
-        return new Redis(configService.get<string>('REDIS_URL') ?? '', {
-          tls: {},
-        });
+        const redisUrl = configService.get<string>('REDIS_URL');
+        if (!redisUrl) {
+          throw new Error('REDIS_URL is not defined in the environment');
+        }
+        return new Redis(redisUrl); // no tls unless required
       },
       inject: [ConfigService],
     },
