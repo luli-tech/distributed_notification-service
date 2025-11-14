@@ -41,4 +41,4 @@ COPY --from=builder /app/push_service/dist ./dist
 
 # Expose port and define start command
 EXPOSE 3000
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]
