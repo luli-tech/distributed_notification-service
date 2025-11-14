@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerModule, ThrottlerStorageService } from "@nestjs/throttler";
 import { ClientsModule } from "@nestjs/microservices";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -10,7 +10,12 @@ import { ConfigModule } from "@nestjs/config"; // Import ConfigModule
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot({ ttl: 60, limit: 20 }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 20,
+      storage:
+        new (require("@nestjs/throttler/dist/throttler-storage-memory.service").ThrottlerStorageMemoryService)(),
+    }),
     ClientsModule.register([
       {
         name: "USER_SERVICE",
