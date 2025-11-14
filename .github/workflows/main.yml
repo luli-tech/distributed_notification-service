@@ -87,10 +87,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - "**"
   pull_request:
     branches:
-      - main
+      - "**"
 
 jobs:
   build-and-test:
@@ -133,17 +133,17 @@ jobs:
         run: pnpm install
         working-directory: ./ # ensure this is repo root
 
-      # 7️⃣ Approve PNPM build scripts
+      #  Approve PNPM build scripts
       - name: Approve PNPM build scripts
         run: pnpm approve-builds
         working-directory: ./
 
-      # 8️⃣ Build all workspace packages recursively
+      #  Build all workspace packages recursively
       - name: Build services
         run: pnpm -r run build
         working-directory: ./
 
-      # 9️⃣ Run tests for all workspaces
+      #  Run tests for all workspaces
       - name: Run tests
         run: pnpm -r run test
         working-directory: ./
