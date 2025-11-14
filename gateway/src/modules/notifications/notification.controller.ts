@@ -23,7 +23,7 @@ import type { Request } from 'express';
 import { ApiResponse } from '../../common/interfaces/response.interface';
 
 @ApiTags('Notifications')
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
@@ -34,7 +34,7 @@ export class NotificationController {
     status: 201,
     description: 'Email notification sent to queue.',
   })
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async sendEmailNotification(
     @Body() sendEmailDto: SendEmailDto,
     @Req() req: Request,
@@ -50,7 +50,7 @@ export class NotificationController {
     status: 201,
     description: 'Push notification sent to queue.',
   })
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async sendPushNotification(
     @Body() sendPushDto: SendPushDto,
     @Req() req: Request,

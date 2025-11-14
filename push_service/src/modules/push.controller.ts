@@ -10,9 +10,16 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerApiResponse,
+  ApiParam,
+} from "@nestjs/swagger"; // New import
 import { PushService } from "./push.service";
 import { SendPushDto } from "./dto/send-push.dto";
 
+@ApiTags("Push") // Add ApiTags decorator
 @Controller("push")
 export class PushController {
   private readonly logger = new Logger(PushController.name);
@@ -23,7 +30,12 @@ export class PushController {
   ) {}
 
   @Post("send")
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @ApiOperation({ summary: "Send a push notification" }) // Add ApiOperation decorator
+  @SwaggerApiResponse({
+    status: 201,
+    description: "Push notification enqueued.",
+  })
+  @UsePipes(new ValidationPipe({ transform: true }))
   async sendPush(@Body() sendPushDto: SendPushDto) {
     // Idempotency: Use unique request_id
     const requestId = sendPushDto.request_id;
@@ -63,6 +75,13 @@ export class PushController {
   }
 
   @Get(":id/status")
+  @ApiOperation({ summary: "Get push notification status" }) // Add ApiOperation decorator
+  @SwaggerApiResponse({
+    status: 200,
+    description: "Push notification status retrieved.",
+  })
+  @SwaggerApiResponse({ status: 404, description: "Notification not found." })
+  @ApiParam({ name: "id", description: "Notification ID", type: String }) // Add ApiParam decorator
   async getPushStatus(@Param("id") id: string) {
     // TODO: Implement status tracki
     return {

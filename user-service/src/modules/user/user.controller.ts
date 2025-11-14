@@ -82,7 +82,7 @@ export class UserController {
     status: 409,
     description: "User with this email already exists.",
   })
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createUserDto: CreateUserDto
   ): Promise<ApiResponse<any>> {
@@ -99,7 +99,7 @@ export class UserController {
   })
   @SwaggerApiResponse({ status: 401, description: "Invalid credentials." })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async login(
     @Body() loginUserDto: LoginUserDto
   ): Promise<ApiResponse<{ access_token: string; user: any }>> {
@@ -149,7 +149,7 @@ export class UserController {
   })
   @SwaggerApiResponse({ status: 404, description: "User not found." })
   @ApiParam({ name: "id", description: "User ID", type: String })
-  // @UsePipes(new ValidationPipe({ transform: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async update_notification_preferences(
     @Param("id") id: string,
     @Body() updateDto: UpdateNotificationPreferencesDto
