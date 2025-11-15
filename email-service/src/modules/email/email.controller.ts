@@ -1,10 +1,10 @@
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
-import { ApiTags, ApiOperation } from "@nestjs/swagger"; // New import
+import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { EmailService } from "./email.service";
-import { SendEmailDto } from "./dto/send-email.dto";
+import { ProcessEmailDto } from "./dto/process-email.dto"; // Use ProcessEmailDto
 
-@ApiTags("Email") // Add ApiTags decorator
+@ApiTags("Email")
 @Controller("email")
 export class EmailController {
   private readonly logger = new Logger(EmailController.name);
@@ -12,8 +12,8 @@ export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
   @EventPattern("send_email_notification")
-  @ApiOperation({ summary: "Handle send email notification event" }) // Add ApiOperation decorator
-  async handleSendEmail(@Payload() data: SendEmailDto) {
+  @ApiOperation({ summary: "Handle send email notification event" })
+  async handleSendEmail(@Payload() data: ProcessEmailDto) {
     this.logger.log(
       `EmailController: Received send_email event with data: ${JSON.stringify(
         data

@@ -26,6 +26,7 @@
     "@nestjs/microservices": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^6.0.0",
+    "@nestjs/swagger": "^11.2.1",
     "amqp-connection-manager": "^4.1.1",
     "amqplib": "^0.10.3",
     "class-validator": "^0.14.2",

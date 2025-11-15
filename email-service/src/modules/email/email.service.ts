@@ -39,6 +39,7 @@ export class EmailService {
     };
 
     try {
+      await sgMail.send(mail);
       this.logger.log(`Email sent to ${sendEmailDto.recipient}`);
     } catch (error: any) {
       this.logger.error(
@@ -47,5 +48,16 @@ export class EmailService {
       );
       throw error;
     }
+  }
+
+  // Placeholder for handling delivery confirmations and bounces
+  async handleDeliveryConfirmation(event: any) {
+    this.logger.log(`Delivery confirmation received: ${JSON.stringify(event)}`);
+    // Implement logic to update notification status in a database or Redis
+  }
+
+  async handleBounce(event: any) {
+    this.logger.warn(`Bounce event received: ${JSON.stringify(event)}`);
+    // Implement logic to update notification status, potentially disable user's email, etc.
   }
 }

@@ -48,28 +48,13 @@ export class PushController {
       `Push notification enqueued: ${JSON.stringify(sendPushDto)}`
     );
 
-    // Performance: Circuit breaker, retry, dead-letter queue (simplified)
-    let status = "pending";
-    let error = null;
-    try {
-      // Simulate sending notification (would be done by consumer in real system)
-      const result = await this.pushService.sendPushNotification(sendPushDto);
-      status = result ? "sent" : "failed";
-    } catch (err) {
-      error = err.message || "Failed to send push notification";
-      status = "failed";
-      // TODO: Move to dead-letter queue if permanently failed
-    }
-    // TODO: Implement retry logic and circuit breaker (use libraries like opossum for advanced)
-    // TODO: Track status in Redis/DB for idempotency and status queries
+    // The actual sending will be handled by a consumer listening to the RabbitMQ queue.
+    // This controller only enqueues the message.
     return {
-      success: status === "sent",
-      data: { status },
-      error,
-      message:
-        status === "sent"
-          ? "Push notification sent"
-          : "Push notification failed",
+      success: true,
+      data: { status: "queued" },
+      error: null,
+      message: "Push notification enqueued successfully",
       meta: null,
     };
   }
