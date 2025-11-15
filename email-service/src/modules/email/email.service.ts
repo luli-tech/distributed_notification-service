@@ -30,6 +30,11 @@ export class EmailService {
     );
 
     const senderEmail = this.configService.get<string>("SENDGRID_SENDER_EMAIL");
+    if (!senderEmail) {
+      throw new Error(
+        "SENDGRID_SENDER_EMAIL is not defined in environment variables"
+      );
+    }
     const mail = {
       to: sendEmailDto.recipient,
       from: senderEmail,
