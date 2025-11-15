@@ -97,12 +97,3 @@ Coding style follows the NestJS conventions used in the repository. Keep changes
 ## License
 
 This repository is licensed under the terms in the `LICENSE` file at the repository root.
-
----
-
-If you'd like, I can also:
-
-- Add per-service quick start commands (I can scan `package.json` files and populate exact start/test scripts), or
-- Add a short architecture diagram (ASCII or image) and environment variable reference for each service.
-
-Tell me if you'd like those additions and I'll add them.

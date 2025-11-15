@@ -1,46 +1,43 @@
-# ------------------------
-# 🧱 Development Stage
-# ------------------------
-FROM node:18-alpine AS development
+FROM node:20-alpine AS builder
+WORKDIR /app/queue_service
 
-# Enable pnpm using Corepack (built into Node 16+)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install bash (optional, helps pnpm scripts) and corepack
+RUN apk add --no-cache bash git python3 make g++ \
+    && corepack enable && corepack prepare pnpm@latest --activate
 
-WORKDIR /app/queue-service
-
-# Copy dependency files first for caching
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (including dev)
-RUN pnpm install --frozen-lockfile
+# Install all dependencies (dev + prod)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
-# Copy the rest of the service files
+# Copy the rest of the source code
 COPY . .
 
-# Build the application
+# Build the project
 RUN pnpm run build
 
 # ------------------------
-# 🚀 Production Stage
+# Production Stage
 # ------------------------
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
+WORKDIR /app/queue_service
 
-# Enable pnpm in the production image too
+# Install runtime dependencies
+RUN apk add --no-cache bash git python3 make g++
+
+# Enable Corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-WORKDIR /app/queue-service
-
-# Copy dependency manifests
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
 
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Install only production dependencies, ignoring scripts
+RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
 
-# Copy full source (needed for assets/configs)
-COPY . .
+# Copy built files from builder stage
+COPY --from=builder /app/queue_service/dist ./dist
 
-# Copy compiled output from the build stage
-COPY --from=development /app/queue-service/dist ./dist
-
-# Start the service
-CMD ["node", "dist/main"]
+# Expose port and define start command
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
