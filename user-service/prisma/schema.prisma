@@ -19,6 +19,5 @@ model User {
   notifications_enabled Boolean  @default(true)
   created_at            DateTime @default(now()) @map("created_at")
   updated_at            DateTime @updatedAt @map("updated_at")
-
-  @@map("users")
+ @@map("users")
 }
