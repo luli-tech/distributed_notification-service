@@ -15,29 +15,34 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: createUserDto.email },
-    });
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      });
 
-    if (existingUser) {
-      throw new ConflictException("User with this email already exists");
+      if (existingUser) {
+        throw new ConflictException("User with this email already exists");
+      }
+
+      const password_hash = await bcrypt.hash(createUserDto.password, 10);
+
+      const user = await this.prisma.user.create({
+        data: {
+          email: createUserDto.email,
+          name: createUserDto.name,
+          password_hash,
+          push_token: createUserDto.push_token,
+          notifications_enabled: createUserDto.notifications_enabled,
+        },
+      });
+
+      // Exclude password_hash before returning
+      const { password_hash: _, ...result } = user;
+      return result;
+    } catch (error) {
+      console.error("Error in UserService.create:", error);
+      throw error; // or throw new InternalServerErrorException("Database error");
     }
-
-    const password_hash = await bcrypt.hash(createUserDto.password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        name: createUserDto.name,
-        password_hash,
-        push_token: createUserDto.push_token,
-        notifications_enabled: createUserDto.notifications_enabled,
-      },
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password_hash: _, ...result } = user;
-    return result;
   }
 
   async find_one(id: number) {

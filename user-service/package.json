@@ -7,6 +7,9 @@
   "license": "UNLICENSED",
   "main": "dist/main.js",
   "scripts": {
+    "prisma": "prisma",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/main.js",
