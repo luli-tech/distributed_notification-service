@@ -16,12 +16,14 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
+    private readonly userService: UserService,
   ) {}
 
   @Patch(':id/push-token')
@@ -47,11 +49,15 @@ export class UserController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User registered successfully.' })
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.userServiceClient.send('register_user', createUserDto);
+  register(@Body() dto: CreateUserDto) {
+    return this.userService.registerUser(dto);
   }
+  // @Post('register')
+  // @ApiOperation({ summary: 'Register a new user' })
+  // @ApiResponse({ status: 201, description: 'User registered successfully.' })
+  // async register(@Body() createUserDto: CreateUserDto) {
+  //   return this.userServiceClient.send('register_user', createUserDto);
+  // }
 
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
