@@ -169,17 +169,16 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
-        "fromEnvVar": "DATABASE_URL",
-        "value": null
+        "fromEnvVar": null,
+        "value": "postgresql://postgres:jRVlRKBtJTvPdbWztgxfQWwlUcRAwbxV@interchange.proxy.rlwy.net:31660/railway"
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\", \"linux-musl\", \"linux-musl-openssl-3.0.x\"]\n  output        = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                    Int      @id @default(autoincrement())\n  email                 String   @unique\n  name                  String\n  password_hash         String\n  push_token            String?\n  notifications_enabled Boolean  @default(true)\n  created_at            DateTime @default(now()) @map(\"created_at\")\n  updated_at            DateTime @updatedAt @map(\"updated_at\")\n\n  @@map(\"users\")\n}\n",
-  "inlineSchemaHash": "8f2148c31716a41d3fa063aa997449be1c0c9683ceaddd5d318d5e00591d5454",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\", \"linux-musl\", \"linux-musl-openssl-3.0.x\"]\n  output        = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = \"postgresql://postgres:jRVlRKBtJTvPdbWztgxfQWwlUcRAwbxV@interchange.proxy.rlwy.net:31660/railway\"\n}\n\nmodel User {\n  id                    Int      @id @default(autoincrement())\n  email                 String   @unique\n  name                  String\n  password_hash         String\n  push_token            String?\n  notifications_enabled Boolean  @default(true)\n  created_at            DateTime @default(now()) @map(\"created_at\")\n  updated_at            DateTime @updatedAt @map(\"updated_at\")\n\n  @@map(\"users\")\n}\n",
+  "inlineSchemaHash": "16e36dc0e058e9ae126e3342f7c2f6e35cc096d19a0aa49a9838695679f9c697",
   "copyEngine": true
 }
 config.dirname = '/'
@@ -190,9 +189,7 @@ config.engineWasm = undefined
 config.compilerWasm = undefined
 
 config.injectableEdgeEnv = () => ({
-  parsed: {
-    DATABASE_URL: typeof globalThis !== 'undefined' && globalThis['DATABASE_URL'] || typeof process !== 'undefined' && process.env && process.env.DATABASE_URL || undefined
-  }
+  parsed: {}
 })
 
 if (typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined) {
