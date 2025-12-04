@@ -19,7 +19,7 @@ import {
 import { PushService } from "./push.service";
 import { SendPushDto } from "./dto/send-push.dto";
 
-@ApiTags("Push") // Add ApiTags decorator
+@ApiTags("Push") 
 @Controller("push")
 export class PushController {
   private readonly logger = new Logger(PushController.name);

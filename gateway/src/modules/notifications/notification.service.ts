@@ -76,7 +76,7 @@ export class NotificationService {
   }
 
   async sendPushNotification(data: any, user_id: string) {
-    // Idempotency: Use request_id if provided, else generate
+    // Idempotency: Uses request_id if provided, else generate
     const notification_id =
       data.request_id ||
       `push-${Date.now()}-${Math.random().toString(36).substring(7)}`;

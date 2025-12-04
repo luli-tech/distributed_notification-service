@@ -7,8 +7,8 @@ import { AppService } from './app.service';
 import { getRabbitMqConfig } from './config/rabbitmq.config';
 import { NotificationsModule } from './modules/notifications/notification.module';
 import { UserModule } from './modules/user/user.module';
-import { RedisModule } from './modules/redis/redis.module'; // Import RedisModule
-import { Request, Response, NextFunction } from 'express'; // Import Request from express
+import { RedisModule } from './modules/redis/redis.module';
+import { Request, Response, NextFunction } from 'express'; 
 
 const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
 Logger.log(`RabbitMQ URL: ${rabbitMqUrl}`, 'AppModule');
