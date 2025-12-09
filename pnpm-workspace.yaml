@@ -1,0 +1,16 @@
+packages:
+  - gateway
+  - user-service
+  - email-service
+  - push_service
+  - template-service
+  - queue_service
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - bcrypt
+  - prisma
+  - unrs-resolver
