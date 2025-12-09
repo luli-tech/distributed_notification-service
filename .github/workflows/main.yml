@@ -1,0 +1,202 @@
+# name: CI/CD Pipeline
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+
+# jobs:
+#   build-and-test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # 1Checkout your repository
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       #  Setup PNPM FIRST
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v3
+#         with:
+#           version: 9 # or 'latest'
+
+#       # Then setup Node (after pnpm is ready)
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+
+#       # 4 Cache pnpm store
+#       - name: Cache pnpm store
+#         uses: actions/cache@v4
+#         with:
+#           path: ~/.pnpm-store
+#           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+#           restore-keys: |
+#             ${{ runner.os }}-pnpm-
+
+#       #  Install dependencies (now pnpm exists)
+#       - name: Install dependencies
+#         run: pnpm install --frozen-lockfile
+
+#       #  Build all workspace packages
+#       - name: Build services
+#         run: pnpm -r run build
+
+#       #  Run tests
+#       - name: Run tests
+#         run: pnpm -r run test
+
+#   docker-build-and-push:
+#     needs: build-and-test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build and push Docker images
+#         run: |
+#           SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
+#           for SERVICE in "${SERVICES[@]}"; do
+#             echo "Building $SERVICE..."
+#             docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE
+#             echo "Pushing $SERVICE..."
+#             docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
+#           done
+
+#   deploy:
+#     needs: docker-build-and-push
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Deploy to server
+#         run: |
+#           echo "Deployment step goes here."
+#           echo "Use SSH or cloud CLI to pull latest images and restart services."
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Install system dependencies for native modules
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      # 3️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 4️⃣ Setup PNPM
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.18.0
+
+      # 5️⃣ Cache PNPM store and node_modules
+      - name: Cache PNPM store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store
+            node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      # 6️⃣ Install dependencies from root
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        working-directory: ./ # ensure this is repo root
+
+      #  Approve PNPM build scripts
+      - name: Approve PNPM build scripts
+        run: pnpm approve-builds
+        working-directory: ./
+
+      #  Build all workspace packages recursively
+      - name: Build services
+        run: pnpm -r run build
+        working-directory: ./
+
+      #  Run tests for all workspaces
+      - name: Run tests
+        run: pnpm -r run test
+        working-directory: ./
+
+  docker-build-and-push:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo again
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build and push Docker images for each service
+      - name: Build and push Docker images
+        continue-on-error: true
+        run: |
+          SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
+          for SERVICE in "${SERVICES[@]}"; do
+            echo "Building $SERVICE..."
+            docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE
+            echo "Pushing $SERVICE..."
+            docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
+          done
+
+  #         - name: Build and push Docker images
+  # continue-on-error: true
+  # run: |
+  #   SERVICES=("gateway" "user-service" "email-service" "push_service" "template-service" "queue_service")
+  #   for SERVICE in "${SERVICES[@]}"; do
+  #     echo "=============================="
+  #     echo "🔨 Building $SERVICE"
+  #     docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest ./$SERVICE \
+  #       || echo "❌ Build failed for $SERVICE — continuing"
+
+  #     echo "📤 Pushing $SERVICE"
+  #     docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest \
+  #       || echo "❌ Push failed for $SERVICE — continuing"
+  #   done
+
+  deploy:
+    needs: docker-build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        run: |
+          echo "Deployment step goes here."
+          echo "Use SSH or cloud CLI to pull latest images and restart services."
