@@ -1,44 +1,46 @@
 # ------------------------
-# 🧱 Development Stage
+# Builder Stage
 # ------------------------
-FROM node:18-alpine AS development
-
-# Enable pnpm using Corepack (included with Node 16+)
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
+FROM node:20-alpine AS builder
 WORKDIR /app/user-service
 
-# Copy dependency manifests
+# Enable Corepack and activate pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (including dev)
-RUN pnpm install --frozen-lockfile
+# Install all dependencies (dev + prod) to build
+RUN pnpm install --no-frozen-lockfile
 
-# Copy the rest of the service files
+
+# Copy the rest of the source code
 COPY . .
 
-# Build the application
+# Build the project
 RUN pnpm run build
+RUN ls -la dist
 
 # ------------------------
-# 🚀 Production Stage
+# Production Stage
 # ------------------------
-FROM node:18-alpine AS production
-
-# Enable pnpm in production image too
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
+FROM node:20-alpine AS production
 WORKDIR /app/user-service
 
-# Copy dependency manifests
+# Enable Corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package.json and lockfile
 COPY package.json pnpm-lock.yaml ./
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --no-frozen-lockfile
 
-# Copy source and compiled output from the previous stage
-COPY . .
-COPY --from=development /app/user-service/dist ./dist
 
-# Default command to run the app
-CMD ["node", "dist/main"]
+# Copy built files from builder stage
+COPY --from=builder /app/user-service/dist ./dist
+COPY --from=builder /app/user-service/generated ./generated
+
+# Expose port and define start command
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
